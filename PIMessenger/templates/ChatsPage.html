@@ -1,0 +1,46 @@
+{% extends "layouts/base.html" %}
+
+{% block content %} 
+    <h1>Messenger Chats</h1>
+{% endblock %}
+
+{% block filterbutton %}{% endblock %}
+
+{% block entries %}
+{% for chat in chats_data %}
+<li class="list-item">
+    <button class="delete-btn" onclick="deleteChat(event)">x</button> <!-- Delete button -->
+    <div class="entry-text">
+      <label for="name">Name:</label>
+      <input type="text" name="name" class="chat-name" placeholder="Enter Chat Name" value="{{chat.name}}"/>
+    </div>
+
+	<div class="entry-text">
+	  <label for="account">Account:</label>
+	  <select name="account" class="item-chat" onchange="redirectToAddAccount(this)">
+	  <option value="-1">Select Account</option>
+	  {% for account in accounts_data %}
+	  <option {% if account.username == chat.owner_account %} selected {% endif %}>{{account.username}}</option>
+	  {% endfor %}
+	  <option value="-1">+ Add New Account</option>
+	  </select>
+	</div>
+
+    <div class="entry-text">
+      <label for="id">Messenger ID:</label>
+      <input type="number" name="id" class="chat-id" placeholder="Enter User/Group ID" value="{{chat.messenger_ID}}"/>
+    </div>
+
+    <div class="entry-text">
+      <label for="messenger-type">Messenger Type:</label>
+      <select name="messenger-type" class="chat-type">
+        <option value="user" {% if chat.type.name == "USER" %} selected {% endif %}>User</option>
+        <option value="group" {% if chat.type.name == "GROUP" %} selected {% endif %}>Group</option>
+      </select>
+    </div>
+</li>
+{% endfor %}
+{% endblock %}
+{%block entrytext%}Chat{% endblock %}
+
+{% block script %}<script src='{{ url_for('static', filename='js/ChatList.js') }}'></script>{% endblock %}

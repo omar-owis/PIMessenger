@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+
+{% block content %} 
+    <h1>Messenger Accounts</h1>
+{% endblock %}
+
+{% block filterbutton %}{% endblock %}
+
+{%block entries%}
+{% for account in accounts_data %}
+<li class="list-item">
+  <button class="delete-btn" onclick="deleteItem(event)">x</button> <!-- Delete button -->
+  
+  <div class="entry-text">
+    <label for="username">Username:</label>
+    <input type="text" name="username" class="item-username" placeholder="User-defined string" value="{{account.username}}" />
+  </div>
+
+  <div class="entry-text">
+    <label for="password">Password:</label>
+    <input type="password" name="password" class="item-password" placeholder="***********" value="{{account.password}}" />
+  </div>
+
+  <div class="entry-text">
+    <label for="show-password">Show Password:</label>
+    <label class="toggle-btn">
+      <input type="checkbox" name="show-password" onclick="togglePasswordVisibility(event)" />
+      <span></span>
+    </label>
+  </div>
+</li>
+{% endfor %}
+{% endblock %}
+{%block entrytext%}Account{% endblock %}
+
+{% block script %}<script src='{{ url_for('static', filename='js/AccountList.js') }}'></script>{% endblock %}

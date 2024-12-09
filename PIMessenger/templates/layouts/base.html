@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIMessenger</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="logo">
+      <!-- Add a logo image here if you have one -->
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
+      PIMessenger
+    </div>
+    <div class="buttons">
+      <!-- Replace buttons with checkboxes and labels -->
+      <input type="checkbox" id="emailing" />
+      <label for="emailing" class="toggle-label">Emailing</label>
+
+      <input type="checkbox" id="active" />
+      <label for="active" class="toggle-label">Active</label>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <a href="{{ url_for('accounts') }}">Accounts</a>
+    <a href="{{ url_for('chats') }}">Chats</a>
+    <a href="{{ url_for('events') }}">Events</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    {% block content %}{% endblock %}
+
+    <!-- Filter and Upload Section (aligned horizontally) -->
+    <div class="filter-upload-container">
+		{% block filterbutton%}{% endblock %}	
+      <!-- Upload Button Outside List Area -->
+      <div class="upload-btn-container">
+        <button class="upload-btn" onclick='uploadItems()'>Upload</button>
+      </div>
+    </div>
+
+    <!-- List Area -->
+    <div class="list-area">
+      <ul id="list">
+        <!-- New entries will be added here -->
+        {%block entries%}{% endblock %}
+      </ul>
+
+      <button class="add-item" onclick="addItem()">+ Add New {%block entrytext%}{% endblock %}</button>
+    </div>
+
+  </div>
+  {% block script %}{% endblock %}
+</body>
+</html>

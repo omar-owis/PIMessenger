@@ -1,0 +1,114 @@
+{% extends "layouts/base.html" %}
+
+{% block content %} 
+    <h1>Messenger Events</h1>
+{% endblock %}
+
+{% block filterbutton %}
+<div class="filter-section">
+  <button onclick="toggleFilterDropdown()">Filter</button>
+  <div class="filter-dropdown" id="filter-dropdown">
+    <div>
+      <label for="filter-name">Name:</label>
+      <input type="text" id="filter-name" placeholder="Filter by Name" onkeyup="filterList()">
+    </div>
+    <div>
+      <label for="filter-id">ID:</label>
+      <input type="text" id="filter-id" placeholder="Filter by ID" onkeyup="filterList()">
+    </div>
+    <div>
+      <label for="filter-chat">Chat:</label>
+      <select id="filter-chat" onchange="filterList()">
+        <option value="">All Chats</option>
+        <option value="chat1">Chat 1</option>
+        <option value="chat2">Chat 2</option>
+        <option value="chat3">Chat 3</option>
+      </select>
+    </div>
+    <div>
+      <label for="filter-type">Type:</label>
+      <select id="filter-type" onchange="filterList()">
+        <option value="">All Types</option>
+        <option value="reply">Reply</option>
+        <option value="time-event">Time Event</option>
+        <option value="reaction">Reaction</option>
+      </select>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block entries %}
+{% for event in events_data %}
+<li class="list-item">
+    <button class="delete-btn" onclick="deleteItem(event)">x</button> <!-- Delete button -->
+    <div class="entry-text">
+      <label for="type">Type:</label>
+      <select name="type" class="item-type">
+        <option value="reply" {% if event.type.name == "REPLY" %} selected {% endif %}>Reply</option>
+        <option value="time" {% if event.type.name == "TIME_EVENT" %} selected {% endif %}>Time Event</option>
+        <option value="reaction" {% if event.type.name == "REACTION" %} selected {% endif %}>Reaction</option>
+      </select>
+    </div>
+
+    <div class="entry-text">
+      <label for="name">Event Name:</label>
+      <input type="text" name="name" class="item-name" placeholder="Enter Event Name" value="{{event.name}}" />
+    </div>
+
+    <div class="entry-text">
+      <label for="id">ID (Server-defined):</label>
+      <input type="text" name="id" class="item-id" value="{{event.id}}" disabled />
+    </div>
+
+	<div class="entry-text">
+	  <label for="chat">Chat:</label>
+	  <select name="chat" class="item-chat" onchange="redirectToAddChat(this)">
+	  <option value="-1">Select Chat</option>
+	  {% for chat in chats_data %}
+	  <option value="{{chat.messenger_ID}}" {% if event.chat_id == chat.messenger_ID %} selected {% endif %}>{{chat.name}}</option>
+	  {% endfor %}
+	  <option value="-1">+ Add New Chat</option>
+	  </select>
+	</div>
+
+    <div class="entry-text">
+      <label for="message">Send Message:</label>
+      <input type="text" name="message" class="item-message" placeholder="Enter Send Message" value="{{event.message}}"/>
+    </div>
+
+    <div class="entry-text time-event">
+      <label for="time">Trigger Time:</label>
+      <input type="time" name="time" value="{{event.execute_time}}" />
+    </div>
+
+    <div class="entry-text reply-data">
+      <label for="reply-name">Reply To:</label>
+      <input type="text" name="reply-name" placeholder="Enter Username" value="{{event.reply_username}}" />
+
+      <label for="trigger-message">Trigger Message:</label>
+      <input type="text" name="trigger-message" placeholder="Enter Trigger Message" value="{{event.reply_trigger_message}}"/>
+
+      <label for="limit-daily">Limit Daily:</label>
+      <label class="toggle-btn">
+        <input type="checkbox" name="limit-daily" {% if event.reply_limit_daily %} checked {% endif %}/>
+        <span></span>
+      </label>
+    </div>
+
+    <div class="entry-text">
+      <label for="delay">Delay:</label>
+      <input type="number" name="delay" placeholder="Enter Delay" value="{{event.random_delay_sec}}"/>
+      <select name="delay-unit">
+        <option value="sec">Sec</option>
+        <option value="min">Min</option>
+        <option value="hr">Hr</option>
+      </select>
+    </div>
+</li>
+{% endfor %}
+{% endblock %}
+
+{%block entrytext%}Event{% endblock %}
+
+{% block script %}<script src='{{ url_for('static', filename='js/EventList.js') }}'></script>{% endblock %}
