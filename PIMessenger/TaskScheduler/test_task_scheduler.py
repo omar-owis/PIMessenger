@@ -109,7 +109,7 @@ class TestTaskScheduler(unittest.TestCase):
             task_id = f"task_{i}"
             func = MagicMock()
             scheduler.add(func, execute_time, task_id)
-            tasks.append((task_id, func))
+            tasks.append(func)
 
         # Ensure all 1000 tasks are scheduled
         self.assertEqual(len(scheduler.tasks), 1000)
@@ -118,7 +118,7 @@ class TestTaskScheduler(unittest.TestCase):
         time.sleep(5.1)
 
         # Ensure that each function was called exactly once
-        for task_id, func in tasks:
+        for func in tasks:
             func.assert_called_once()
         
         # Ensure zero tasks are scheduled
@@ -154,8 +154,7 @@ class TestTaskScheduler(unittest.TestCase):
         func.assert_not_called()
         self.assertEqual(len(scheduler.tasks), 0)
 
-    @patch('time.sleep', return_value=None)  # Mock sleep to avoid waiting
-    def test_thread_safety(self, mock_sleep):
+    def test_thread_safety(self):
         def add_task_thread(scheduler):
             execute_time = datetime.now() + timedelta(seconds=1)
             func = MagicMock()
@@ -179,7 +178,62 @@ class TestTaskScheduler(unittest.TestCase):
 
         # Ensure that the task was not added or executed
         self.assertEqual(len(scheduler.tasks), 0)
+        
+    def test_disable_enable_functionality(self):
+        scheduler = TaskScheduler()
+        tasks = []
+        execute_time = datetime.now() + timedelta(seconds=1)  # Tasks will be scheduled 1 second from now
 
+        # Add 100 tasks
+        for i in range(100):
+            task_id = f"task_{i}"
+            func = MagicMock()
+            scheduler.add(func, execute_time, task_id)
+            tasks.append(func)
 
+        scheduler.disable()
+        time.sleep(1.1)
+
+        # Ensure that each function was not called
+        for func in tasks:
+            func.assert_not_called()
+        
+        scheduler.enable()
+        time.sleep(0.1)       
+        
+        # Ensure that each function was called exactly once
+        for func in tasks:
+            func.assert_called_once()
+        
+    def test_multiple_disables_enables(self):
+        scheduler = TaskScheduler()
+        tasks = []
+        execute_time = datetime.now() + timedelta(seconds=1)  # Tasks will be scheduled 1 second from now
+
+        # Add 100 tasks
+        for i in range(100):
+            task_id = f"task_{i}"
+            func = MagicMock()
+            scheduler.add(func, execute_time, task_id)
+            tasks.append(func)
+
+        scheduler.disable()
+        time.sleep(0.3)
+        scheduler.enable()
+
+        # Ensure that each function was not called
+        for func in tasks:
+            func.assert_not_called()
+        
+        scheduler.disable()
+        time.sleep(0.5)
+        scheduler.enable()
+
+        time.sleep(0.5)
+        
+        # Ensure that each function was called exactly once
+        for func in tasks:
+            func.assert_called_once()
+    
 if __name__ == '__main__':
     unittest.main()

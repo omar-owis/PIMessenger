@@ -9,14 +9,14 @@ class TaskScheduler:
         self.tasks: dict[str, Task] = {}
     
     def stop(self):
-        for _, task in self.tasks.items():
+        for task in self.tasks.values():
             task.terminate()
     
     def add(self, func: callable, execute_datetime: datetime, task_id: str):
         if datetime.now() > execute_datetime:
-            raise ValueError('Past datetime')
+            raise ValueError('Execute datetime must be in the future')
         task = self.Task(func, execute_datetime, lambda: self._remove_task(task_id))
-        thread = threading.Thread(target=task.begin)
+        thread = threading.Thread(target=task.begin, daemon=True)
         self.tasks[task_id] = task
         thread.start()
     
@@ -25,9 +25,17 @@ class TaskScheduler:
             task = self.tasks[task_id]
             task.terminate()
             del self.tasks[task_id]
+            
+    def disable(self):
+        for task in self.tasks.values():
+            task.disable()
+    
+    def enable(self):
+        for task in self.tasks.values():
+            task.enable()
     
     def _remove_task(self, task_id: str):
-        del self.tasks[task_id]
+        self.tasks.pop(task_id)
         
     
     class Task:
@@ -38,16 +46,20 @@ class TaskScheduler:
             self.on_complete = on_complete
             self.args = args
             self.kwargs = kwargs
-            self._event = threading.Event()
+            self._sleep_event = threading.Event()
+            self._hold_event = threading.Event()
             self._kill = False
+            self._disabled = False
         
         def begin(self):
             try:
                 wait_period = self._calculate_secs()
                 if wait_period > 0:
-                    self._event.wait(wait_period)  # maximum TIMEOUT_MAX -> 49.71 days
+                    self._sleep_event.wait(wait_period)  # maximum TIMEOUT_MAX -> 49.71 days
                 
                 if not self._kill:
+                    if self._disabled:
+                        self._hold_event.wait()
                     self.function(*self.args, **self.kwargs)
                     self.on_complete()
             except Exception as e:
@@ -55,7 +67,15 @@ class TaskScheduler:
         
         def terminate(self):
             self._kill = True
-            self._event.set()
+            self._sleep_event.set()
+            
+        def disable(self):
+            self._disabled = True
+            self._hold_event.clear()
+        
+        def enable(self):
+            self._disabled = False
+            self._hold_event.set()
         
         def _calculate_secs(self):
             now = datetime.now()
